@@ -10,9 +10,10 @@ app.use(bodyParser.json());
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://applebro47_db_user:pushkar123@cluster0.gpfpsuh.mongodb.net/rgm_db?retryWrites=true&w=majority&appName=Cluster0';
 
-// Connect with improved settings for cloud environments
+// Increased timeouts to 30 seconds for better reliability on cloud hosting
 mongoose.connect(MONGODB_URI, {
-    serverSelectionTimeoutMS: 10000, // 10s timeout
+    serverSelectionTimeoutMS: 30000, // 30s timeout
+    connectTimeoutMS: 30000
 })
 .then(() => console.log("✅ Database Connected Successfully"))
 .catch(err => console.error("❌ Database Connection Error:", err.message));
