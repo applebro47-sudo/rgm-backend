@@ -8,71 +8,43 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// MongoDB Atlas connection string
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://applebro47_db_user:pushkar123@cluster0.gpfpsuh.mongodb.net/rgm_db?retryWrites=true&w=majority&appName=Cluster0';
 
-// Improved connection logic
+// Connect with improved settings for cloud environments
 mongoose.connect(MONGODB_URI, {
-    serverSelectionTimeoutMS: 5000 // Timeout after 5s instead of 30s
-}).then(() => {
-    console.log("✅ Successfully connected to MongoDB Atlas");
-}).catch(err => {
-    console.error("❌ MongoDB connection error details:");
-    console.error(err);
-});
+    serverSelectionTimeoutMS: 10000, // 10s timeout
+})
+.then(() => console.log("✅ Database Connected Successfully"))
+.catch(err => console.error("❌ Database Connection Error:", err.message));
 
-// Disable buffering so we get errors immediately if the DB is down
+// Disable buffering so we see errors immediately
 mongoose.set('bufferCommands', false);
 
-// --- Schemas ---
-const userSchema = new mongoose.Schema({
+const User = mongoose.model('User', new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    nickname: String,
-    birthday: String,
-    comment: String,
-    profileImage: String
-});
-const User = mongoose.model('User', userSchema);
+    nickname: String
+}));
 
-const commentSchema = new mongoose.Schema({
-    id: String,
-    user: String,
-    text: String,
-    timestamp: { type: Number, default: Date.now }
-});
-
-const postSchema = new mongoose.Schema({
-    id: String,
-    owner: String,
-    mediaUri: String,
-    mediaType: String,
-    caption: String,
-    likes: [String],
-    comments: [commentSchema],
-    timestamp: { type: Number, default: Date.now }
-});
-const Post = mongoose.model('Post', postSchema);
-
-// --- Routes ---
-app.get('/', (req, res) => {
-    res.send('RGM Backend is running and connected to ' + (mongoose.connection.readyState === 1 ? 'DB' : 'NOTHING'));
+app.get('/api/status', (req, res) => {
+    res.send({
+        server: "online",
+        database: mongoose.connection.readyState === 1 ? "connected" : "disconnected"
+    });
 });
 
 app.post('/api/register', async (req, res) => {
     if (mongoose.connection.readyState !== 1) {
-        return res.status(503).send({ error: "Database not connected. Please check Atlas Network Access." });
+        return res.status(503).send({ error: "Database not ready. Check Atlas IP Whitelist." });
     }
     try {
         const { username, password } = req.body;
-        console.log("Registering user:", username);
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = new User({ username, password: hashedPassword, nickname: username });
         await user.save();
-        res.status(201).send({ message: "User registered successfully" });
+        res.status(201).send({ message: "Registered" });
     } catch (error) {
-        console.error("Registration error:", error);
-        res.status(400).send({ error: error.message || "Registration failed" });
+        res.status(400).send({ error: error.message });
     }
 });
 
@@ -86,18 +58,11 @@ app.post('/api/login', async (req, res) => {
             res.status(401).send({ error: "Invalid credentials" });
         }
     } catch (error) {
-        res.status(500).send({ error: "Internal server error" });
+        res.status(500).send({ error: "Server error" });
     }
 });
 
-app.get('/api/users', async (req, res) => {
-    try {
-        const users = await User.find({}, { password: 0 });
-        res.send(users);
-    } catch (error) {
-        res.status(500).send({ error: "Failed to fetch users" });
-    }
-});
+app.get('/', (req, res) => res.send('RGM Backend v2 is live!'));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server listening on port ${PORT}`));
