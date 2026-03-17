@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/FirstFragment">
+
+    <fragment
+        android:id="@+id/FirstFragment"
+        android:name="com.pushkar.RGM.FirstFragment"
+        android:label="@string/first_fragment_label"
+        tools:layout="@layout/fragment_first">
+
+        <action
+            android:id="@+id/action_FirstFragment_to_SecondFragment"
+            app:destination="@id/SecondFragment" />
+        <action
+            android:id="@+id/action_FirstFragment_to_ProfileCreateFragment"
+            app:destination="@id/ProfileCreateFragment" />
+        <action
+            android:id="@+id/action_FirstFragment_to_HomeFragment"
+            app:destination="@id/HomeFragment" />
+        <action
+            android:id="@+id/action_FirstFragment_to_ForgotPasswordFragment"
+            app:destination="@id/ForgotPasswordFragment" />
+        <action
+            android:id="@+id/action_FirstFragment_to_AdminFragment"
+            app:destination="@id/AdminFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/SecondFragment"
+        android:name="com.pushkar.RGM.SecondFragment"
+        android:label="@string/second_fragment_label"
+        tools:layout="@layout/fragment_second">
+
+        <action
+            android:id="@+id/action_SecondFragment_to_FirstFragment"
+            app:destination="@id/FirstFragment" />
+        <action
+            android:id="@+id/action_SecondFragment_to_ProfileCreateFragment"
+            app:destination="@id/ProfileCreateFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/ForgotPasswordFragment"
+        android:name="com.pushkar.RGM.ForgotPasswordFragment"
+        android:label="Forgot Password"
+        tools:layout="@layout/fragment_forgot_password" />
+    <fragment
+        android:id="@+id/ProfileCreateFragment"
+        android:name="com.pushkar.RGM.ProfileCreateFragment"
+        android:label="Profile Create"
+        tools:layout="@layout/fragment_profile_create">
+        <action
+            android:id="@+id/action_ProfileCreateFragment_to_FirstFragment"
+            app:destination="@id/FirstFragment"
+            app:popUpTo="@id/FirstFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_ProfileCreateFragment_to_HomeFragment"
+            app:destination="@id/HomeFragment"
+            app:popUpTo="@id/ProfileCreateFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_ProfileCreateFragment_to_FriendListFragment"
+            app:destination="@id/FriendListFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/HomeFragment"
+        android:name="com.pushkar.RGM.HomeFragment"
+        android:label="Home"
+        tools:layout="@layout/fragment_home">
+        <action
+            android:id="@+id/action_HomeFragment_to_FirstFragment"
+            app:destination="@id/FirstFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_HomeFragment_to_ProfileCreateFragment"
+            app:destination="@id/ProfileCreateFragment" />
+        <action
+            android:id="@+id/action_HomeFragment_to_SearchFragment"
+            app:destination="@id/SearchFragment" />
+        <action
+            android:id="@+id/action_HomeFragment_to_ChatListFragment"
+            app:destination="@id/ChatListFragment" />
+        <action
+            android:id="@+id/action_HomeFragment_to_UpdatesFragment"
+            app:destination="@id/UpdatesFragment" />
+        <action
+            android:id="@+id/action_HomeFragment_to_ReelsFragment"
+            app:destination="@id/ReelsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/SearchFragment"
+        android:name="com.pushkar.RGM.SearchFragment"
+        android:label="Search"
+        tools:layout="@layout/fragment_search">
+        <action
+            android:id="@+id/action_SearchFragment_to_ChatFragment"
+            app:destination="@id/ChatFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/ChatListFragment"
+        android:name="com.pushkar.RGM.ChatListFragment"
+        android:label="Messages"
+        tools:layout="@layout/fragment_chat_list">
+        <action
+            android:id="@+id/action_ChatListFragment_to_ChatFragment"
+            app:destination="@id/ChatFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/ChatFragment"
+        android:name="com.pushkar.RGM.ChatFragment"
+        android:label="Chat"
+        tools:layout="@layout/fragment_chat">
+        <argument
+            android:name="otherUser"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/UpdatesFragment"
+        android:name="com.pushkar.RGM.UpdatesFragment"
+        android:label="Notifications"
+        tools:layout="@layout/fragment_updates" />
+    <fragment
+        android:id="@+id/ReelsFragment"
+        android:name="com.pushkar.RGM.ReelsFragment"
+        android:label="Reels"
+        tools:layout="@layout/fragment_reels" />
+    <fragment
+        android:id="@+id/FriendListFragment"
+        android:name="com.pushkar.RGM.FriendListFragment"
+        android:label="Friends"
+        tools:layout="@layout/fragment_friend_list" />
+    <fragment
+        android:id="@+id/AdminFragment"
+        android:name="com.pushkar.RGM.AdminFragment"
+        android:label="Admin Panel"
+        tools:layout="@layout/fragment_admin">
+        <action
+            android:id="@+id/action_AdminFragment_to_HomeFragment"
+            app:destination="@id/HomeFragment" />
+        <action
+            android:id="@+id/action_AdminFragment_to_ReelsFragment"
+            app:destination="@id/ReelsFragment" />
+        <action
+            android:id="@+id/action_AdminFragment_to_SearchFragment"
+            app:destination="@id/SearchFragment" />
+        <action
+            android:id="@+id/action_AdminFragment_to_ChatListFragment"
+            app:destination="@id/ChatListFragment" />
+    </fragment>
+</navigation>

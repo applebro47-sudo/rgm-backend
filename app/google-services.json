@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "566231843923",
+    "project_id": "pushkar2b",
+    "storage_bucket": "pushkar2b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:566231843923:android:00e1fb49e7a1813c54b2a6",
+        "android_client_info": {
+          "package_name": "com.pushkar.RGM"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDRf_H1JZnk6ofbz3BBVd1OA0e0-cJViV4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
