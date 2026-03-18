@@ -12,11 +12,9 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.pushkar.RGM.databinding.FragmentSearchBinding
-import com.google.firebase.FirebaseApp
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.launch
 
@@ -24,7 +22,7 @@ class SearchFragment : Fragment() {
 
     private var _binding: FragmentSearchBinding? = null
     private val binding get() = _binding!!
-    private var database: DatabaseReference? = null
+    private val database: DatabaseReference = FirebaseUtils.database
     private lateinit var appDatabase: AppDatabase
 
     override fun onCreateView(
@@ -39,15 +37,6 @@ class SearchFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize Firebase safely
-        try {
-            if (FirebaseApp.getApps(requireContext()).isNotEmpty()) {
-                database = FirebaseDatabase.getInstance().reference
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-
         binding.btnSearch.setOnClickListener {
             val searchUsername = binding.etSearchUsername.text.toString().trim()
             
@@ -60,11 +49,7 @@ class SearchFragment : Fragment() {
             val imm = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(view.windowToken, 0)
 
-            if (database != null) {
-                searchUserInCloud(searchUsername)
-            } else {
-                searchUserLocally(searchUsername)
-            }
+            searchUserInCloud(searchUsername)
         }
         
         binding.cvUserProfile.setOnClickListener {
@@ -77,11 +62,7 @@ class SearchFragment : Fragment() {
 
         binding.btnAddFriend.setOnClickListener {
             val targetUser = binding.tvSearchUsernameLabel.text.toString().removePrefix("@")
-            if (database != null) {
-                sendFriendRequestCloud(targetUser)
-            } else {
-                sendFriendRequestLocally(targetUser)
-            }
+            sendFriendRequestCloud(targetUser)
         }
     }
 
@@ -132,7 +113,7 @@ class SearchFragment : Fragment() {
         binding.cvUserProfile.visibility = View.GONE
         binding.tvNoUserFound.visibility = View.GONE
         
-        database?.child("user_profiles")?.child(username)?.addListenerForSingleValueEvent(object : ValueEventListener {
+        database.child("user_profiles").child(username).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val user = snapshot.getValue(User::class.java)
                 if (user != null) {
@@ -152,7 +133,8 @@ class SearchFragment : Fragment() {
                     
                     checkFriendshipStatus(username)
                 } else {
-                    database?.child("users")?.child(username)?.get()?.addOnSuccessListener { coreSnapshot ->
+                    // Try to search in root users just in case
+                    database.child("users").child(username).get().addOnSuccessListener { coreSnapshot ->
                         if (coreSnapshot.exists()) {
                             binding.cvUserProfile.visibility = View.VISIBLE
                             binding.tvSearchNickname.text = username
@@ -162,7 +144,7 @@ class SearchFragment : Fragment() {
                         } else {
                             searchUserLocally(username)
                         }
-                    }?.addOnFailureListener {
+                    }.addOnFailureListener {
                         searchUserLocally(username)
                     }
                 }
@@ -198,15 +180,15 @@ class SearchFragment : Fragment() {
         }
 
         binding.btnAddFriend.visibility = View.VISIBLE
-        database?.child("friend_requests")?.child(targetUser)?.child(currentUser)
-            ?.addListenerForSingleValueEvent(object : ValueEventListener {
+        database.child("friend_requests").child(targetUser).child(currentUser)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     if (snapshot.exists()) {
                         binding.btnAddFriend.text = getString(R.string.requested)
                         binding.btnAddFriend.isEnabled = false
                     } else {
-                        database?.child("friends")?.child(currentUser)?.child(targetUser)
-                            ?.addListenerForSingleValueEvent(object : ValueEventListener {
+                        database.child("friends").child(currentUser).child(targetUser)
+                            .addListenerForSingleValueEvent(object : ValueEventListener {
                                 override fun onDataChange(friendSnapshot: DataSnapshot) {
                                     if (friendSnapshot.exists()) {
                                         binding.btnAddFriend.text = getString(R.string.friends)
@@ -226,23 +208,17 @@ class SearchFragment : Fragment() {
             })
     }
 
-    private fun sendFriendRequestLocally(targetUser: String) {
-        Toast.makeText(context, "Friend Request Sent to $targetUser (Local Mode)!", Toast.LENGTH_SHORT).show()
-        binding.btnAddFriend.text = getString(R.string.requested)
-        binding.btnAddFriend.isEnabled = false
-    }
-
     private fun sendFriendRequestCloud(targetUser: String) {
         val sharedPref = requireActivity().getSharedPreferences("PIEE_PREFS", Context.MODE_PRIVATE)
         val currentUser = sharedPref.getString("CURRENT_USER", "") ?: ""
 
-        database?.child("friend_requests")?.child(targetUser)?.child(currentUser)?.setValue(true)
-            ?.addOnSuccessListener {
+        database.child("friend_requests").child(targetUser).child(currentUser).setValue(true)
+            .addOnSuccessListener {
                 Toast.makeText(context, "Friend Request Sent!", Toast.LENGTH_SHORT).show()
                 binding.btnAddFriend.text = getString(R.string.requested)
                 binding.btnAddFriend.isEnabled = false
-            }?.addOnFailureListener {
-                sendFriendRequestLocally(targetUser)
+            }.addOnFailureListener {
+                Toast.makeText(context, "Failed to send request", Toast.LENGTH_SHORT).show()
             }
     }
 

@@ -65,7 +65,7 @@ class AdminFragment : Fragment() {
     }
 
     private fun fetchUserListLocally() {
-        val sharedPref = requireActivity().getSharedPreferences("PIEE_PREFS", Context.MODE_PRIVATE)
+        val sharedPref = requireActivity().getSharedPreferences("SYNAPSE_PREFS", Context.MODE_PRIVATE)
         val userListJson = sharedPref.getString("LOCAL_USER_LIST", "[]")
         val type = object : TypeToken<List<String>>() {}.type
         val userList: List<String> = Gson().fromJson(userListJson, type)
@@ -82,7 +82,7 @@ class AdminFragment : Fragment() {
                     val usernames = users.map { it.username }
                     updateUI(usernames)
                     
-                    val sharedPref = requireActivity().getSharedPreferences("PIEE_PREFS", Context.MODE_PRIVATE)
+                    val sharedPref = requireActivity().getSharedPreferences("SYNAPSE_PREFS", Context.MODE_PRIVATE)
                     sharedPref.edit().putString("LOCAL_USER_LIST", Gson().toJson(usernames)).apply()
                 } else {
                     fetchUserListLocally()

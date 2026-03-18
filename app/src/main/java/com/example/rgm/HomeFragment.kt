@@ -31,7 +31,7 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val sharedPref = requireActivity().getSharedPreferences("PIEE_PREFS", Context.MODE_PRIVATE)
+        val sharedPref = requireActivity().getSharedPreferences("SYNAPSE_PREFS", Context.MODE_PRIVATE)
         val currentUser = sharedPref.getString("CURRENT_USER", "") ?: ""
 
         if (currentUser.isNotEmpty()) {
@@ -45,6 +45,7 @@ class HomeFragment : Fragment() {
                 }
             }
             
+            checkBackendConnection()
             loadGlobalFeed(currentUser)
         } else {
             findNavController().navigate(R.id.action_HomeFragment_to_FirstFragment)
@@ -71,6 +72,21 @@ class HomeFragment : Fragment() {
             sharedPref.edit { remove("CURRENT_USER") }
             findNavController().navigate(R.id.action_HomeFragment_to_FirstFragment)
             true
+        }
+    }
+
+    private fun checkBackendConnection() {
+        lifecycleScope.launch {
+            try {
+                val response = RetrofitClient.instance.getServerStatus()
+                if (response.isSuccessful && response.body()?.get("server") == "online") {
+                    Toast.makeText(context, "✅ Connection Successful: SYNAPSE Cloud is Live!", Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(context, "⚠️ Cloud limited: Backend returned error", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "❌ Connection Error: Backend unreachable", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

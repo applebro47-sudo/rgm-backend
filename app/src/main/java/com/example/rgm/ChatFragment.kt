@@ -17,11 +17,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.pushkar.RGM.databinding.FragmentChatBinding
-import com.google.firebase.FirebaseApp
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -34,7 +32,7 @@ class ChatFragment : Fragment() {
     private lateinit var chatAdapter: ChatAdapter
     private lateinit var currentUser: String
     private lateinit var otherUser: String
-    private var database: DatabaseReference? = null
+    private val database: DatabaseReference = FirebaseUtils.database
     private var chatListener: ValueEventListener? = null
     private lateinit var appDatabase: AppDatabase
 
@@ -66,13 +64,7 @@ class ChatFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        try {
-            if (FirebaseApp.getApps(requireContext()).isNotEmpty()) {
-                database = FirebaseDatabase.getInstance().reference
-            }
-        } catch (e: Exception) { e.printStackTrace() }
-
-        val sharedPref = requireActivity().getSharedPreferences("PIEE_PREFS", Context.MODE_PRIVATE)
+        val sharedPref = requireActivity().getSharedPreferences("SYNAPSE_PREFS", Context.MODE_PRIVATE)
         currentUser = sharedPref.getString("CURRENT_USER", "") ?: ""
         otherUser = arguments?.getString("otherUser") ?: ""
 
@@ -105,7 +97,7 @@ class ChatFragment : Fragment() {
 
         if (otherUser == "AI Assistant") {
             loadAiMessages()
-        } else if (database != null) {
+        } else {
             listenForCloudMessages()
         }
 
@@ -151,12 +143,16 @@ class ChatFragment : Fragment() {
                     snapshot.children.forEach { child ->
                         val msg = child.getValue(Message::class.java)
                         if (msg != null && (msg.deletedBy == null || !msg.deletedBy.contains(currentUser))) {
-                            // Save each cloud message to local database
+                            // DECRYPT message before saving locally
+                            val decryptedText = if (!msg.text.isNullOrEmpty()) {
+                                CryptoUtils.decrypt(chatId, msg.text)
+                            } else null
+
                             val entity = MessageEntity(
                                 id = msg.id,
                                 sender = msg.sender,
                                 receiver = msg.receiver,
-                                text = msg.text,
+                                text = decryptedText,
                                 mediaUri = msg.mediaUri,
                                 mediaType = msg.mediaType,
                                 timestamp = msg.timestamp,
@@ -165,7 +161,6 @@ class ChatFragment : Fragment() {
                             appDatabase.messageDao().insertMessage(entity)
                         }
                     }
-                    // Refresh UI from local database to ensure consistency
                     loadMessagesLocally()
                 }
             }
@@ -173,7 +168,7 @@ class ChatFragment : Fragment() {
                 Toast.makeText(context, "Chat Sync Error: ${error.message}", Toast.LENGTH_SHORT).show()
             }
         }
-        database?.child("chats")?.child(chatId)?.addValueEventListener(chatListener!!)
+        database.child("chats").child(chatId).addValueEventListener(chatListener!!)
     }
 
     private fun getChatId(user1: String, user2: String): String {
@@ -182,20 +177,24 @@ class ChatFragment : Fragment() {
     }
 
     private fun sendMessage(text: String) {
-        val message = Message(sender = currentUser, receiver = otherUser, text = text)
+        val chatId = getChatId(currentUser, otherUser)
+        
         if (otherUser == "AI Assistant") {
+            val message = Message(sender = currentUser, receiver = otherUser, text = text)
             saveAiMessage(message)
             generateAiResponse(text)
         } else {
-            val chatId = getChatId(currentUser, otherUser)
+            // ENCRYPT text before sending to cloud
+            val encryptedText = CryptoUtils.encrypt(chatId, text)
+            val message = Message(sender = currentUser, receiver = otherUser, text = encryptedText)
             
-            // Save locally first
+            // Save UNENCRYPTED locally for user to read
             lifecycleScope.launch {
                 val entity = MessageEntity(
                     id = message.id,
                     sender = message.sender,
                     receiver = message.receiver,
-                    text = message.text,
+                    text = text, 
                     mediaUri = message.mediaUri,
                     mediaType = message.mediaType,
                     timestamp = message.timestamp,
@@ -203,10 +202,14 @@ class ChatFragment : Fragment() {
                 )
                 appDatabase.messageDao().insertMessage(entity)
                 loadMessagesLocally()
+                
+                try {
+                    RetrofitClient.instance.addChattedUser(currentUser, otherUser)
+                } catch (e: Exception) { e.printStackTrace() }
             }
 
-            // Then sync to cloud
-            database?.child("chats")?.child(chatId)?.child(message.id)?.setValue(message)
+            // Sync ENCRYPTED to cloud
+            database.child("chats").child(chatId).child(message.id).setValue(message)
         }
     }
 
@@ -229,9 +232,13 @@ class ChatFragment : Fragment() {
                 )
                 appDatabase.messageDao().insertMessage(entity)
                 loadMessagesLocally()
+                
+                try {
+                    RetrofitClient.instance.addChattedUser(currentUser, otherUser)
+                } catch (e: Exception) { e.printStackTrace() }
             }
 
-            database?.child("chats")?.child(chatId)?.child(message.id)?.setValue(message)
+            database.child("chats").child(chatId).child(message.id).setValue(message)
         }
     }
 
@@ -272,7 +279,7 @@ class ChatFragment : Fragment() {
                 } else {
                     appDatabase.messageDao().deleteMessageById(message.id)
                     val chatId = getChatId(currentUser, otherUser)
-                    database?.child("chats")?.child(chatId)?.child(message.id)?.removeValue()
+                    database.child("chats").child(chatId).child(message.id).removeValue()
                 }
             }
             chatAdapter.clearSelection()
@@ -307,7 +314,7 @@ class ChatFragment : Fragment() {
     }
 
     private fun loadAiMessages() {
-        val sharedPref = requireActivity().getSharedPreferences("PIEE_PREFS", Context.MODE_PRIVATE)
+        val sharedPref = requireActivity().getSharedPreferences("SYNAPSE_PREFS", Context.MODE_PRIVATE)
         val json = sharedPref.getString("AI_CHATS_$currentUser", "[]")
         val type = object : TypeToken<List<Message>>() {}.type
         val messages: List<Message> = Gson().fromJson(json, type)
@@ -341,7 +348,7 @@ class ChatFragment : Fragment() {
     }
 
     private fun saveAiMessage(message: Message) {
-        val sharedPref = requireActivity().getSharedPreferences("PIEE_PREFS", Context.MODE_PRIVATE)
+        val sharedPref = requireActivity().getSharedPreferences("SYNAPSE_PREFS", Context.MODE_PRIVATE)
         val json = sharedPref.getString("AI_CHATS_$currentUser", "[]")
         val type = object : TypeToken<MutableList<Message>>() {}.type
         val messages: MutableList<Message> = Gson().fromJson(json, type)
@@ -351,7 +358,7 @@ class ChatFragment : Fragment() {
     }
 
     private fun deleteAiMessage(messageId: String) {
-        val sharedPref = requireActivity().getSharedPreferences("PIEE_PREFS", Context.MODE_PRIVATE)
+        val sharedPref = requireActivity().getSharedPreferences("SYNAPSE_PREFS", Context.MODE_PRIVATE)
         val json = sharedPref.getString("AI_CHATS_$currentUser", "[]")
         val type = object : TypeToken<MutableList<Message>>() {}.type
         val messages: MutableList<Message> = Gson().fromJson(json, type)
@@ -364,7 +371,7 @@ class ChatFragment : Fragment() {
         super.onDestroyView()
         chatListener?.let {
             val chatId = getChatId(currentUser, otherUser)
-            database?.child("chats")?.child(chatId)?.removeEventListener(it)
+            database.child("chats").child(chatId).removeEventListener(it)
         }
         _binding = null
     }

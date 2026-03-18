@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYNAPSE | Neural Network Portal</title>
+    <style>
+        :root {
+            --neon-blue: #00D2FF;
+            --neon-purple: #9D50BB;
+            --dark-bg: #0A0E14;
+            --glass: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--dark-bg);
+            color: #E1E1E1;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .bg-glow {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(0, 210, 255, 0.1) 0%, rgba(157, 80, 187, 0.05) 50%, transparent 70%);
+            z-index: -1;
+            filter: blur(50px);
+        }
+
+        .container {
+            text-align: center;
+            padding: 40px;
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 210, 255, 0.2);
+            border-radius: 24px;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+            max-width: 450px;
+            width: 90%;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            margin: 0;
+            background: linear-gradient(to right, var(--neon-blue), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 8px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        .tagline {
+            font-size: 0.8rem;
+            letter-spacing: 4px;
+            color: var(--neon-blue);
+            margin-bottom: 40px;
+            opacity: 0.8;
+        }
+
+        .description {
+            line-height: 1.6;
+            margin-bottom: 40px;
+            color: #B0B0B0;
+        }
+
+        .download-btn {
+            display: inline-block;
+            padding: 18px 40px;
+            background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple));
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            text-transform: uppercase;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(0, 210, 255, 0.3);
+        }
+
+        .version {
+            margin-top: 20px;
+            font-size: 0.7rem;
+            color: #666;
+            letter-spacing: 1px;
+        }
+
+        .grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(rgba(0, 210, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0, 210, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -2;
+        }
+    </style>
+</head>
+<body>
+    <div class="grid"></div>
+    <div class="bg-glow"></div>
+
+    <div class="container">
+        <h1>SYNAPSE</h1>
+        <div class="tagline">Neural Network Portal</div>
+
+        <p class="description">
+            Experience the next evolution of social connectivity.
+            Encrypted. Futuristic. Real-time.
+        </p>
+
+        <a href="SYNAPSE.apk" class="download-btn">Download Neural Link</a>
+
+        <div class="version">BUILD v1.0.4 | SYSTEM STATUS: ONLINE</div>
+    </div>
+
+    <script>
+        // Check if the server is actually online
+        fetch('/api/status')
+            .then(res => res.json())
+            .then(data => {
+                if(data.server === 'online') {
+                    console.log('Neural Link Active');
+                }
+            });
+    </script>
+</body>
+</html>

@@ -15,6 +15,7 @@ import com.pushkar.RGM.databinding.FragmentFirstBinding
 import kotlinx.coroutines.launch
 import java.net.ConnectException
 import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 
 class FirstFragment : Fragment() {
 
@@ -46,7 +47,7 @@ class FirstFragment : Fragment() {
 
             // Admin bypass
             if (identifier == "7879532096" && pass == "1234") {
-                val sharedPref = requireActivity().getSharedPreferences("PIEE_PREFS", Context.MODE_PRIVATE)
+                val sharedPref = requireActivity().getSharedPreferences("SYNAPSE_PREFS", Context.MODE_PRIVATE)
                 sharedPref.edit { 
                     putString("CURRENT_USER", "Admin")
                     putBoolean("Admin_profile_created", true)
@@ -67,8 +68,19 @@ class FirstFragment : Fragment() {
                     if (response.isSuccessful) {
                         val user = response.body()
                         if (user != null) {
-                            val sharedPref = requireActivity().getSharedPreferences("PIEE_PREFS", Context.MODE_PRIVATE)
-                            sharedPref.edit { putString("CURRENT_USER", identifier) }
+                            val sharedPref = requireActivity().getSharedPreferences("SYNAPSE_PREFS", Context.MODE_PRIVATE)
+                            
+                            // Check if profile exists on server
+                            val hasProfile = !user.nickname.isNullOrEmpty() && user.nickname != user.username
+
+                            sharedPref.edit { 
+                                putString("CURRENT_USER", identifier)
+                                putString("${identifier}_nickname", user.nickname)
+                                putString("${identifier}_birthday", user.birthday)
+                                putString("${identifier}_comment", user.comment)
+                                putString("${identifier}_image", user.profileImage)
+                                putBoolean("${identifier}_profile_created", hasProfile)
+                            }
 
                             // Sync user data to local Room database
                             appDatabase.userDao().insertUser(UserEntity(
@@ -76,13 +88,12 @@ class FirstFragment : Fragment() {
                                 password = pass,
                                 nickname = user.nickname ?: identifier,
                                 profileImage = user.profileImage ?: "",
-                                isProfileCreated = true
+                                isProfileCreated = hasProfile
                             ))
 
                             Toast.makeText(context, "Login Successful!", Toast.LENGTH_SHORT).show()
                             
-                            val isProfileCreated = sharedPref.getBoolean("${identifier}_profile_created", false)
-                            if (isProfileCreated) {
+                            if (hasProfile) {
                                 findNavController().navigate(R.id.action_FirstFragment_to_HomeFragment)
                             } else {
                                 findNavController().navigate(R.id.action_FirstFragment_to_ProfileCreateFragment)
@@ -98,8 +109,9 @@ class FirstFragment : Fragment() {
                     Log.e("Login", "Network Error", e)
                     
                     val errorMsg = when (e) {
-                        is ConnectException -> "Cannot reach server. Run 'adb reverse tcp:3000 tcp:3000' in Terminal."
-                        is SocketTimeoutException -> "Connection timed out. Check if your Node server is running."
+                        is UnknownHostException -> "Server not found. Check your internet or URL."
+                        is ConnectException -> "Cannot connect to server. Ensure Backend is running."
+                        is SocketTimeoutException -> "Connection timed out. Server is waking up, please wait."
                         else -> "Connection Error: ${e.localizedMessage ?: "Unknown error"}"
                     }
                     Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show()
