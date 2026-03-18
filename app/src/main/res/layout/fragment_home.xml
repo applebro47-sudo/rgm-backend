@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@color/synapse_dark_bg"
     tools:context=".HomeFragment">
 
     <!-- Top Bar with Logo and Profile -->
@@ -16,28 +16,30 @@
         android:orientation="horizontal"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
+        android:background="@drawable/synapse_input_bg"
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:fontFamily="serif"
-            android:text="Piee"
-            android:textColor="@color/black"
-            android:textSize="24sp"
-            android:textStyle="italic|bold" />
+            android:fontFamily="sans-serif-black"
+            android:text="SYNAPSE"
+            android:textColor="@color/synapse_neon_blue"
+            android:textSize="22sp"
+            android:letterSpacing="0.1" />
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cv_home_profile"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardCornerRadius="17.5dp"
-            app:cardElevation="0dp"
-            app:strokeColor="@color/insta_border"
-            app:strokeWidth="1dp">
+            app:cardCornerRadius="19dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="@color/synapse_dark_bg"
+            app:strokeColor="@color/synapse_neon_blue"
+            app:strokeWidth="1.5dp">
 
             <ImageView
                 android:id="@+id/iv_home_profile_image"
@@ -53,6 +55,7 @@
         android:id="@+id/rv_home_feed"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginTop="4dp"
         app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
         app:layout_constraintTop_toBottomOf="@id/top_bar" />
 
@@ -60,8 +63,9 @@
         android:id="@+id/tv_no_posts"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="No posts yet"
-        android:textColor="@color/insta_text_gray"
+        android:text="No neural data found"
+        android:textColor="@color/synapse_text_primary"
+        android:letterSpacing="0.1"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -72,9 +76,9 @@
     <LinearLayout
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:background="@color/white"
-        android:elevation="8dp"
+        android:layout_height="65dp"
+        android:background="@color/synapse_dark_bg"
+        android:elevation="12dp"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent">
 
@@ -94,7 +98,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@android:drawable/ic_popup_reminder"
-                    app:tint="@color/black" />
+                    app:tint="@color/synapse_neon_blue" />
                 <View
                     android:id="@+id/view_notification_badge"
                     android:layout_width="8dp"
@@ -106,8 +110,10 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Updates"
-                android:textSize="10sp" />
+                android:text="UPDATES"
+                android:textColor="@color/synapse_text_primary"
+                android:textSize="9sp"
+                android:letterSpacing="0.1" />
         </LinearLayout>
 
         <LinearLayout
@@ -123,12 +129,14 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@android:drawable/ic_menu_search"
-                app:tint="@color/black" />
+                app:tint="@color/synapse_neon_blue" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Search"
-                android:textSize="10sp" />
+                android:text="DISCOVER"
+                android:textColor="@color/synapse_text_primary"
+                android:textSize="9sp"
+                android:letterSpacing="0.1" />
         </LinearLayout>
 
         <LinearLayout
@@ -144,12 +152,14 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@android:drawable/ic_menu_slideshow"
-                app:tint="@color/black" />
+                app:tint="@color/synapse_neon_blue" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Reels"
-                android:textSize="10sp" />
+                android:text="REELS"
+                android:textColor="@color/synapse_text_primary"
+                android:textSize="9sp"
+                android:letterSpacing="0.1" />
         </LinearLayout>
 
         <LinearLayout
@@ -165,12 +175,14 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@android:drawable/ic_menu_send"
-                app:tint="@color/black" />
+                app:tint="@color/synapse_neon_blue" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Chat"
-                android:textSize="10sp" />
+                android:text="COMMS"
+                android:textColor="@color/synapse_text_primary"
+                android:textSize="9sp"
+                android:letterSpacing="0.1" />
         </LinearLayout>
 
     </LinearLayout>

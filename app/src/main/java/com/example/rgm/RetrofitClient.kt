@@ -4,12 +4,11 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
-    // For Emulator use: http://10.0.2.2:3000/
-    // For Physical Device via USB run: adb reverse tcp:3000 tcp:3000
-    // Then you can use: http://127.0.0.1:3000/
-    const val BASE_URL = "http://10.0.2.2:3000/"
+    // Production URL for Global Internet Access
+    const val BASE_URL = "https://rgm-backend-2.onrender.com/"
 
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
@@ -17,6 +16,9 @@ object RetrofitClient {
 
     private val httpClient = OkHttpClient.Builder()
         .addInterceptor(logging)
+        .connectTimeout(60, TimeUnit.SECONDS)
+        .readTimeout(60, TimeUnit.SECONDS)
+        .writeTimeout(60, TimeUnit.SECONDS)
         .build()
 
     val instance: UserApiService by lazy {
